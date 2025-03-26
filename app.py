@@ -1,11 +1,13 @@
 from flask import Flask, request
-app = Flask(__name__)
 from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import os
+import bcrypt
 
 load_dotenv()
+
+app = Flask(__name__)
 
 uri = os.getenv("MONGODB_URI")
 
@@ -31,14 +33,17 @@ def hello_world():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
+    print("data", data)
     if not data:
         return 'No data received', 400
     email = data.get('email')
     password = data.get('password')
+    bytes = password.encode('utf-8')
     if not email or not password:
         return 'Email or Password is missing', 400
     current_user = user_collection.find_one({'email': email})
-    if email == current_user.email and password == current_user.password:
+    print("current_user", current_user)
+    if email == current_user["email"] and bcrypt.checkpw(bytes, current_user["password"]):
         return 'Login Success'
     else:
         return 'Login Failed', 401
@@ -48,10 +53,21 @@ def register():
     data = request.json
     if not data:
         return 'No data received', 400
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
-    if not username or not password:
-        return 'Username or Password is missing', 400
+    bytes = password.encode('utf-8') 
+    salt = bcrypt.gensalt() 
+    hash = bcrypt.hashpw(bytes, salt)
+    if not email or not password:
+        return 'Email or Password is missing', 400
+    if '@' not in email:
+        return 'Invalid Email', 400
+    if len(password) < 6:
+        return 'Password is too short', 400
+    user_collection.insert_one({
+        'email': email,
+        'password': hash
+    })
     return 'User Registered Successfully'
 
 if __name__ == '__main__':
