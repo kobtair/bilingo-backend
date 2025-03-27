@@ -26,6 +26,7 @@ def register():
         return 'No data received', 400
     email = data.get('email')
     password = data.get('password')
+    name = data.get('name')
     if not email or not password:
         return 'Email or Password is missing', 400
     if '@' not in email:
@@ -34,6 +35,7 @@ def register():
         return 'Password is too short', 400
     hashed_password = hash_password(password)
     user_collection.insert_one({
+        'name': name,
         'email': email,
         'password': hashed_password,
         'points': 0
