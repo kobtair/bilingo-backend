@@ -1,6 +1,6 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify, make_response
 from config import user_collection
-from utils import hash_password, check_password
+from utils import hash_password, check_password, generate_jwt
 
 auth_routes = Blueprint('auth_routes', __name__)
 
@@ -15,7 +15,16 @@ def login():
         return 'Email or Password is missing', 400
     current_user = user_collection.find_one({'email': email})
     if current_user and check_password(password, current_user["password"]):
-        return 'Login Success'
+        token_payload = {
+            'user_id': str(current_user['_id']),
+            'email': current_user['email'],
+            'is_admin': current_user.get('is_admin', False)
+        }
+        token = generate_jwt(token_payload)
+        response = make_response(jsonify({'message': 'Login Success'}))
+        response.set_cookie('user_token', token, httponly=True)
+        response.set_cookie('is_admin', str(current_user.get('is_admin', False)), httponly=True)
+        return response
     else:
         return 'Login Failed', 401
 
