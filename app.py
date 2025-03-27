@@ -47,7 +47,28 @@ def login():
         return 'Login Success'
     else:
         return 'Login Failed', 401
-    
+
+
+@app.route('/admin-login')
+def admin_login():
+    data = request.json
+    if not data:
+        return 'No data received', 400
+    email = data.get('email')
+    password = data.get('password')
+    bytes = password.encode('utf-8')
+    if not email or not password:
+        return 'Email or Password is missing', 400
+    if email=="admin" and password=="admin":
+        return 'Admin Login Success'
+    else:
+        return 'Admin Login Failed', 401
+
+app.route('/get-leaderboard')
+def get_leaderboard():
+    leaderboard = user_collection.find().sort("points", -1)
+    return leaderboard
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
@@ -66,7 +87,8 @@ def register():
         return 'Password is too short', 400
     user_collection.insert_one({
         'email': email,
-        'password': hash
+        'password': hash,
+        'points': 0
     })
     return 'User Registered Successfully'
 
