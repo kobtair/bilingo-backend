@@ -25,7 +25,9 @@ def generate_jwt(payload, expires_in=3600):
     :return: Encoded JWT token as a string.
     """
     payload['exp'] = datetime.utcnow() + timedelta(seconds=expires_in)
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    print(encoded_jwt)
+    return encoded_jwt
 
 def decode_jwt(token):
     """

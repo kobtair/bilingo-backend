@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response
 from config import user_collection
 from utils import hash_password, check_password, generate_jwt
+import os  # Added for environment variable access
 
 auth_routes = Blueprint('auth_routes', __name__)
 
@@ -14,9 +15,11 @@ def create_auth_response(user, message):
         'is_admin': user.get('is_admin', False)
     }
     token = generate_jwt(token_payload)
-    response = make_response(jsonify({'message': message}))
-    response.set_cookie('user_token', token, httponly=True, secure=True)
-    response.set_cookie('is_admin', str(user.get('is_admin', False)), httponly=True, secure=True)
+    # Set secure cookies only in production
+    is_secure = os.getenv("FLASK_ENV") == "production"
+    response = make_response(jsonify({'user': user, 'message': message}))
+    response.set_cookie('user_token', token, httponly=True, secure=is_secure)
+    response.set_cookie('is_admin', str(user.get('is_admin', False)), httponly=True, secure=is_secure)
     return response
 
 @auth_routes.route('/login', methods=['POST'])
@@ -30,6 +33,8 @@ def login():
         return 'Email or Password is missing', 400
     current_user = user_collection.find_one({'email': email})
     if current_user and check_password(password, current_user["password"]):
+        current_user.pop('password')
+        current_user['_id'] = str(current_user['_id'])
         return create_auth_response(current_user, 'Login Success')
     else:
         return 'Login Failed', 401
@@ -62,6 +67,8 @@ def register():
     except Exception as e:
         return f"Database error: {str(e)}", 500
     current_user = user_collection.find_one({'email': email})
+    current_user.pop('password')
+    current_user['_id'] = str(current_user['_id'])
     return create_auth_response(current_user, 'User Registered Successfully')
 
 
