@@ -4,6 +4,21 @@ from utils import hash_password, check_password, generate_jwt
 
 auth_routes = Blueprint('auth_routes', __name__)
 
+def create_auth_response(user, message):
+    """
+    Helper function to generate JWT and set cookies.
+    """
+    token_payload = {
+        'user_id': str(user['_id']),
+        'email': user['email'],
+        'is_admin': user.get('is_admin', False)
+    }
+    token = generate_jwt(token_payload)
+    response = make_response(jsonify({'message': message}))
+    response.set_cookie('user_token', token, httponly=True, secure=True)
+    response.set_cookie('is_admin', str(user.get('is_admin', False)), httponly=True, secure=True)
+    return response
+
 @auth_routes.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -15,16 +30,7 @@ def login():
         return 'Email or Password is missing', 400
     current_user = user_collection.find_one({'email': email})
     if current_user and check_password(password, current_user["password"]):
-        token_payload = {
-            'user_id': str(current_user['_id']),
-            'email': current_user['email'],
-            'is_admin': current_user.get('is_admin', False)
-        }
-        token = generate_jwt(token_payload)
-        response = make_response(jsonify({'message': 'Login Success'}))
-        response.set_cookie('user_token', token, httponly=True)
-        response.set_cookie('is_admin', str(current_user.get('is_admin', False)), httponly=True)
-        return response
+        return create_auth_response(current_user, 'Login Success')
     else:
         return 'Login Failed', 401
 
@@ -43,10 +49,19 @@ def register():
     if len(password) < 6:
         return 'Password is too short', 400
     hashed_password = hash_password(password)
-    user_collection.insert_one({
-        'name': name,
-        'email': email,
-        'password': hashed_password,
-        'points': 0
-    })
-    return 'User Registered Successfully'
+    existingUser = user_collection.find_one({'email': email})
+    if existingUser:
+        return 'User already exists', 400
+    try:
+        user_collection.insert_one({
+            'name': name,
+            'email': email,
+            'password': hashed_password,
+            'points': 0
+        })
+    except Exception as e:
+        return f"Database error: {str(e)}", 500
+    current_user = user_collection.find_one({'email': email})
+    return create_auth_response(current_user, 'User Registered Successfully')
+
+

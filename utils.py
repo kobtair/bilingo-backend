@@ -1,8 +1,11 @@
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
+import os
 
-SECRET_KEY = "your_secret_key"  # Replace with a secure key
+SECRET_KEY = os.getenv("JWT_SECRET")
+if not SECRET_KEY:
+    raise ValueError("JWT_SECRET environment variable is not set")
 
 def hash_password(password):
     bytes = password.encode('utf-8')
