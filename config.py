@@ -16,3 +16,4 @@ except Exception as e:
 
 db = client['bilingo']
 user_collection = db['users']
+course_collection = db['courses']
