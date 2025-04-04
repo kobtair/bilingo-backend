@@ -3,7 +3,7 @@ import os
 import tempfile
 from difflib import SequenceMatcher
 from Levenshtein import distance as levenshtein_distance
-from utils.ml import transcribe_audio, text_to_pinyin, simplify_pinyin
+from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
 
 STORAGE_PATH = "/home/aaqib/proj/College/fyp/bilingo-backend/storage"
 
@@ -44,7 +44,7 @@ def analyze_audio():
 
         # Compare phonetics using SequenceMatcher and Levenshtein distance
         ratio = SequenceMatcher(None, simplified_phonetics1, simplified_phonetics2).ratio()
-        lev_dist = levenshtein_distance(simplified_phonetics1, simplified_phonetics2)
+        # lev_dist = levenshtein_distance(simplified_phonetics1, simplified_phonetics2)
     finally:
         if os.path.exists(upload_path):
             os.remove(upload_path)
