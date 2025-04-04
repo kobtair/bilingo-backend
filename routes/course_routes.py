@@ -1,18 +1,47 @@
 from flask import Blueprint, request
 from config import course_collection
 from pydantic import BaseModel, ValidationError, field_validator
-from typing import Optional
+from typing import Optional, List
 
 course_routes = Blueprint('course_routes', __name__)
 
-class CourseModel(BaseModel):
+# New ChapterModel for course chapters
+class ChapterModel(BaseModel):
     title: str
     description: Optional[str] = None
+    content: str
+    audio_file: str
+
+    @field_validator("title")
+    def chapter_title_non_empty(cls, v):
+        if not v.strip():
+            raise ValueError("Chapter title must be a non-empty string")
+        return v.strip()
+
+# Updated CourseModel with new fields and chapters
+class CourseModel(BaseModel):
+    title: str
+    language: str  # new field
+    dialect: str   # new field for dialect
+    description: Optional[str] = None
+    chapters: List[ChapterModel] = []  # new field with default empty list
 
     @field_validator("title")
     def title_non_empty(cls, v):
         if not v.strip():
             raise ValueError("Title must be a non-empty string")
+        return v.strip()
+
+    @field_validator("language")
+    def language_non_empty(cls, v):
+        if not v.strip():
+            raise ValueError("Language must be a non-empty string")
+        return v.strip()
+    
+    @field_validator("dialect")
+    def dialect_non_empty(cls, v):
+        if not v.strip():
+            raise ValueError("Dialect must be a non-empty string")
         return v.strip()
 
     @field_validator("description", mode="before")

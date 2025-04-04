@@ -47,6 +47,11 @@ def register():
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
+    primary_language = data.get('primary_language')
+    if not name:
+        return 'Name is missing', 400
+    if not primary_language:
+        return 'Primary Language is missing', 400
     if not email or not password:
         return 'Email or Password is missing', 400
     if '@' not in email:
@@ -62,6 +67,7 @@ def register():
             'name': name,
             'email': email,
             'password': hashed_password,
+            'primary_language': primary_language,
             'points': 0
         })
     except Exception as e:
