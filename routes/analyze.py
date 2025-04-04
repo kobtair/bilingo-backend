@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 import os
+import tempfile
 from difflib import SequenceMatcher
 from Levenshtein import distance as levenshtein_distance
-from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
+from utils.ml import transcribe_audio, text_to_pinyin, simplify_pinyin
 
 STORAGE_PATH = "/home/aaqib/proj/College/fyp/bilingo-backend/storage"
 
@@ -23,25 +24,30 @@ def analyze_audio():
 
     # Save uploaded file temporarily
     audio_file = request.files['audio_file']
-    upload_path = f"/tmp/{audio_file.filename}"
-    audio_file.save(upload_path)
+    tmp_dir = tempfile.gettempdir()
+    upload_path = os.path.join(tmp_dir, audio_file.filename)
+    try:
+        audio_file.save(upload_path)
+    except Exception as e:
+        return jsonify({"error": f"Failed to save file to temporary location: {str(e)}"}), 500
 
-    # Process base audio file
-    transcription1 = transcribe_audio(base_audio_path)
-    pinyin_phonetics1 = text_to_pinyin(transcription1)
-    simplified_phonetics1 = simplify_pinyin(pinyin_phonetics1)
+    try:
+        # Process base audio file
+        transcription1 = transcribe_audio(base_audio_path)
+        pinyin_phonetics1 = text_to_pinyin(transcription1)
+        simplified_phonetics1 = simplify_pinyin(pinyin_phonetics1)
 
-    # Process uploaded audio file
-    transcription2 = transcribe_audio(upload_path)
-    pinyin_phonetics2 = text_to_pinyin(transcription2)
-    simplified_phonetics2 = simplify_pinyin(pinyin_phonetics2)
+        # Process uploaded audio file
+        transcription2 = transcribe_audio(upload_path)
+        pinyin_phonetics2 = text_to_pinyin(transcription2)
+        simplified_phonetics2 = simplify_pinyin(pinyin_phonetics2)
 
-    # Compare phonetics using SequenceMatcher and Levenshtein distance
-    ratio = SequenceMatcher(None, simplified_phonetics1, simplified_phonetics2).ratio()
-    lev_dist = levenshtein_distance(simplified_phonetics1, simplified_phonetics2)
-
-    # Remove temporary file
-    os.remove(upload_path)
+        # Compare phonetics using SequenceMatcher and Levenshtein distance
+        ratio = SequenceMatcher(None, simplified_phonetics1, simplified_phonetics2).ratio()
+        lev_dist = levenshtein_distance(simplified_phonetics1, simplified_phonetics2)
+    finally:
+        if os.path.exists(upload_path):
+            os.remove(upload_path)
 
     return jsonify({
          "base_audio": {
