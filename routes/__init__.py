@@ -3,8 +3,8 @@ from .auth_routes import auth_routes
 from .user_routes import user_routes
 from .admin_routes import admin_routes
 from .leaderboard_routes import leaderboard_routes
-from .course_routes import course_routes        # added course routes
-from .analyze import analyze_routes        # added analyze route
+from .course_routes import course_routes   
+from .analyze import analyze_routes        
 
 routes = Blueprint('routes', __name__)
 
