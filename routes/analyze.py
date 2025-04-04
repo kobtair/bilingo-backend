@@ -4,7 +4,8 @@ from difflib import SequenceMatcher
 from Levenshtein import distance as levenshtein_distance
 from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
 
-STORAGE_PATH = "/home/aaqib/proj/College/fyp/bilingo-backend/storage"
+STORAGE_PATH = r"D:\bilingo\bilingo-backend"
+
 
 analyze_routes = Blueprint("analyze", __name__)
 
