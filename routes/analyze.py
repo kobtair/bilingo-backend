@@ -6,9 +6,9 @@ from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
 
 STORAGE_PATH = "/home/aaqib/proj/College/fyp/bilingo-backend/storage"
 
-analyze_bp = Blueprint("analyze", __name__)
+analyze_routes = Blueprint("analyze", __name__)
 
-@analyze_bp.route('/analyze', methods=['POST'])
+@analyze_routes.route('/analyze', methods=['POST'])
 def analyze_audio():
     # Get base_audio_id from request form
     base_audio_id = request.form.get('base_audio_id')
