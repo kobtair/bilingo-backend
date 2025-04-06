@@ -73,7 +73,7 @@ def get_chapter_by_id(chapter_id):
     """
     Get a chapter by its ID.
     """
-    chapter = chapter_collection.find_one({"_id": ObjectId(chapter_id)})
+    chapter = chapter_collection.find_one({"id": chapter_id})
     if not chapter:
         return {"error": "Chapter not found"}, 404
     chapter['_id'] = str(chapter['_id'])  # Convert ObjectId to string

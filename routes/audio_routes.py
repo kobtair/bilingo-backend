@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from datetime import date
 from config import audio_collection
 from bson import ObjectId
 
@@ -30,11 +31,21 @@ def upload_audio():
     """
     Upload a new audio file.
     """
-    if 'file' not in request.files:
-        return {"error": "No file provided"}, 400
-    file = request.files['file']
-    audio_id = audio_collection.insert_one({"filename": file.filename}).inserted_id
+    # Extract additional fields from the request form (or use request.json if preferred)
+    data = {
+        "id": request.form.get('id'),
+        "title": request.form.get('title'),
+        "language": request.form.get('language'),
+        "dialect": request.form.get('dialect'),
+        "phraseSaid": request.form.get('phraseSaid'),
+        "fileName": request.form.get('fileName'),
+        "fileUrl": request.form.get('fileUrl'),
+        "duration": request.form.get('duration'),
+        "uploadDate": date.today().strftime("%Y-%m-%d"),
+    }
+    
     # Save file to disk or cloud storage here
+    audio_id = audio_collection.insert_one(data).inserted_id
     return {"message": "Audio file uploaded successfully", "audio_id": str(audio_id)}, 201
 
 @audio_routes.route('/audio/<audio_id>', methods=['DELETE'])
@@ -42,7 +53,7 @@ def delete_audio(audio_id):
     """
     Delete an audio file by its ID.
     """
-    result = audio_collection.delete_one({"_id": ObjectId(audio_id)})
+    result = audio_collection.delete_one({"id": audio_id})
     if result.deleted_count == 0:
         return {"error": "Audio file not found"}, 404
     return {"message": "Audio file deleted successfully"}, 200

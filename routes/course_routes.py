@@ -73,7 +73,7 @@ def get_course(course_id):
     if not course:
         return jsonify({"error": "Course not found"}), 404
     course['_id'] = str(course['_id'])
-    return jsonify({"course": course}), 200
+    return jsonify(course), 200
 
 @course_routes.route('/courses', methods=['POST'])
 def add_course():
