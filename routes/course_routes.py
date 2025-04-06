@@ -1,5 +1,6 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from config import course_collection
+from bson import ObjectId
 from pydantic import BaseModel, ValidationError, field_validator
 from typing import Optional, List
 
@@ -56,17 +57,23 @@ def get_courses():
     Get all courses from the database.
     """
     courses = list(course_collection.find())
-    return {"courses": courses}, 200
+    for course in courses:
+        for key in list(course.keys()):
+            if isinstance(course[key], bytes):
+                course[key] = course[key].decode('utf-8')
+        del course['_id']
+    return jsonify(courses), 200
 
 @course_routes.route('/courses/<course_id>', methods=['GET'])
 def get_course(course_id):
     """
     Get a specific course by ID from the database.
     """
-    course = course_collection.find_one({"_id": course_id})
+    course = course_collection.find_one({"id": course_id})
     if not course:
-        return {"error": "Course not found"}, 404
-    return {"course": course}, 200
+        return jsonify({"error": "Course not found"}), 404
+    course['_id'] = str(course['_id'])
+    return jsonify({"course": course}), 200
 
 @course_routes.route('/courses', methods=['POST'])
 def add_course():
@@ -91,7 +98,7 @@ def update_course(course_id):
         valid_course = CourseModel.model_validate(course_data)
     except ValidationError as e:
         return {"error": e.errors()}, 400
-    result = course_collection.update_one({"_id": course_id}, {"$set": valid_course.model_dump()})
+    result = course_collection.update_one({"id": course_id}, {"$set": valid_course.model_dump()})
     if result.matched_count == 0:
         return {"error": "Course not found"}, 404
     return {"message": "Course updated successfully"}, 200

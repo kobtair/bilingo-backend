@@ -2,8 +2,8 @@ from flask import Blueprint, request, jsonify
 import os
 import tempfile
 from difflib import SequenceMatcher
-from Levenshtein import distance as levenshtein_distance
-from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
+# from Levenshtein import distance as levenshtein_distance
+# from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
 
 STORAGE_PATH = "/home/aaqib/proj/College/fyp/bilingo-backend/storage"
 
@@ -62,7 +62,7 @@ def analyze_audio():
          },
          "comparison": {
              "similarity_ratio": ratio,
-             "levenshtein_distance": lev_dist
+            #  "levenshtein_distance": lev_dist
          }
     })
 

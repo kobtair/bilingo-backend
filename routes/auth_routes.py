@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, make_response
+import datetime
 from config import user_collection
 from utils import hash_password, check_password, generate_jwt
 import os  # Added for environment variable access
@@ -35,6 +36,13 @@ def login():
     if current_user and check_password(password, current_user["password"]):
         current_user.pop('password')
         current_user['_id'] = str(current_user['_id'])
+        # Ensure all fields are returned in the response
+        current_user.setdefault('profileImage', '')
+        current_user.setdefault('level', 'Beginner')
+        current_user.setdefault('progress', 0)
+        current_user.setdefault('lastActive', '')
+        current_user.setdefault('joinDate', '')
+        current_user.setdefault('status', 'Active')
         return create_auth_response(current_user, 'Login Success')
     else:
         return 'Login Failed', 401
@@ -47,7 +55,8 @@ def register():
     email = data.get('email')
     password = data.get('password')
     name = data.get('name')
-    primary_language = data.get('primary_language')
+    primary_language = data.get('primaryLanguage')
+    profile_image = data.get('profileImage', '')  # Optional field
     if not name:
         return 'Name is missing', 400
     if not primary_language:
@@ -67,8 +76,14 @@ def register():
             'name': name,
             'email': email,
             'password': hashed_password,
-            'primary_language': primary_language,
-            'points': 0
+            'language': primary_language,
+            'profileImage': profile_image,
+            'level': 'Beginner',  
+            'progress': 0,  
+            'lastActive': datetime.datetime.now().isoformat(),  
+            'joinDate': datetime.datetime.now().isoformat(),
+            'points': 0,  
+            'status': 'Active'  
         })
     except Exception as e:
         return f"Database error: {str(e)}", 500
