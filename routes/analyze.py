@@ -2,8 +2,8 @@ from flask import Blueprint, request, jsonify
 import os
 import tempfile
 from difflib import SequenceMatcher
-from Levenshtein import distance as levenshtein_distance
-from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
+# from Levenshtein import distance as levenshtein_distance
+# from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
 
 STORAGE_PATH = r"D:\bilingo\bilingo-backend"
 
@@ -35,16 +35,16 @@ def analyze_audio():
     try:
         # Process base audio file
         transcription1 = transcribe_audio(base_audio_path)
-        pinyin_phonetics1 = text_to_phonetics(transcription1)
-        plain_phonetics1 = text_to_plain_phonetics(transcription1)
+        # pinyin_phonetics1 = text_to_phonetics(transcription1)
+        # plain_phonetics1 = text_to_plain_phonetics(transcription1)
 
         # Process uploaded audio file
         transcription2 = transcribe_audio(upload_path)
-        pinyin_phonetics2 = text_to_phonetics(transcription2)
-        plain_phonetics2 = text_to_plain_phonetics(transcription2)
+        # pinyin_phonetics2 = text_to_phonetics(transcription2)
+        # plain_phonetics2 = text_to_plain_phonetics(transcription2)
 
         # Compare phonetics using SequenceMatcher on plain phonetics
-        ratio = SequenceMatcher(None, plain_phonetics1, plain_phonetics2).ratio()
+        # ratio = SequenceMatcher(None, plain_phonetics1, plain_phonetics2).ratio()
     finally:
         if os.path.exists(upload_path):
             os.remove(upload_path)
@@ -52,16 +52,16 @@ def analyze_audio():
     return jsonify({
          "base_audio": {
              "transcription": transcription1,
-             "pinyin": pinyin_phonetics1,
-             "plain": plain_phonetics1
+            #  "pinyin": pinyin_phonetics1,
+            #  "plain": plain_phonetics1
          },
          "uploaded_audio": {
              "transcription": transcription2,
-             "pinyin": pinyin_phonetics2,
-             "plain": plain_phonetics2
+            #  "pinyin": pinyin_phonetics2,
+            #  "plain": plain_phonetics2
          },
          "comparison": {
-             "similarity_ratio": ratio
+            #  "similarity_ratio": ratio
          }
     })
 
