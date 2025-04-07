@@ -3,7 +3,7 @@ import os
 import tempfile
 from difflib import SequenceMatcher
 from Levenshtein import distance as levenshtein_distance
-from utils.ml import transcribe_audio, text_to_pinyin, simplify_pinyin
+from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
 
 STORAGE_PATH = r"D:\bilingo\bilingo-backend"
 
