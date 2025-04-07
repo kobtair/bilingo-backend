@@ -17,3 +17,6 @@ except Exception as e:
 db = client['bilingo']
 user_collection = db['users']
 course_collection = db['courses']
+audio_collection = db['audioFiles']
+admin_collection = db['admins']
+chapter_collection = db['chapters']

@@ -35,17 +35,16 @@ def analyze_audio():
     try:
         # Process base audio file
         transcription1 = transcribe_audio(base_audio_path)
-        pinyin_phonetics1 = text_to_pinyin(transcription1)
-        simplified_phonetics1 = simplify_pinyin(pinyin_phonetics1)
+        pinyin_phonetics1 = text_to_phonetics(transcription1)
+        plain_phonetics1 = text_to_plain_phonetics(transcription1)
 
         # Process uploaded audio file
         transcription2 = transcribe_audio(upload_path)
-        pinyin_phonetics2 = text_to_pinyin(transcription2)
-        simplified_phonetics2 = simplify_pinyin(pinyin_phonetics2)
+        pinyin_phonetics2 = text_to_phonetics(transcription2)
+        plain_phonetics2 = text_to_plain_phonetics(transcription2)
 
-        # Compare phonetics using SequenceMatcher and Levenshtein distance
-        ratio = SequenceMatcher(None, simplified_phonetics1, simplified_phonetics2).ratio()
-        lev_dist = levenshtein_distance(simplified_phonetics1, simplified_phonetics2)
+        # Compare phonetics using SequenceMatcher on plain phonetics
+        ratio = SequenceMatcher(None, plain_phonetics1, plain_phonetics2).ratio()
     finally:
         if os.path.exists(upload_path):
             os.remove(upload_path)
@@ -54,16 +53,15 @@ def analyze_audio():
          "base_audio": {
              "transcription": transcription1,
              "pinyin": pinyin_phonetics1,
-             "simplified": simplified_phonetics1
+             "plain": plain_phonetics1
          },
          "uploaded_audio": {
              "transcription": transcription2,
              "pinyin": pinyin_phonetics2,
-             "simplified": simplified_phonetics2
+             "plain": plain_phonetics2
          },
          "comparison": {
-             "similarity_ratio": ratio,
-             "levenshtein_distance": lev_dist
+             "similarity_ratio": ratio
          }
     })
 
