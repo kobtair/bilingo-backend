@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from config import chapter_collection
+from config import chapter_collection, course_collection
 from pydantic import BaseModel, ValidationError, field_validator
 from typing import Optional
 from bson import ObjectId
@@ -13,6 +13,7 @@ class ChapterModel(BaseModel):
     content: str
     audio_id: str
     description: str  # New field added
+    order: int = 0    # new field: chapter order
 
     @field_validator("title")
     def title_non_empty(cls, v):
@@ -65,8 +66,13 @@ def add_chapter(course_id):
         valid_chapter = ChapterModel.model_validate(chapter_data)
     except ValidationError as e:
         return {"error": e.errors()}, 400
-    chapter_collection.insert_one(valid_chapter.model_dump())
-    return {"message": "Chapter added successfully"}, 201
+    result = chapter_collection.insert_one(valid_chapter.model_dump())
+    # Update the chapters array in the respective course
+    course_collection.update_one(
+        {"_id": course_id},
+        {"$push": {"chapters": str(result.inserted_id)}}
+    )
+    return jsonify(chapter_data), 201
 
 @chapter_routes.route('/chapters/<chapter_id>', methods=['GET'])
 def get_chapter_by_id(chapter_id):
@@ -102,9 +108,19 @@ def delete_chapter(chapter_id):
     """
     Delete a chapter by its ID.
     """
+    # Retrieve chapter to get course_id before deletion
+    chapter = chapter_collection.find_one({"_id": ObjectId(chapter_id)})
+    if not chapter:
+        return {"error": "Chapter not found"}, 404
+    course_id = chapter.get("course_id")
     result = chapter_collection.delete_one({"_id": ObjectId(chapter_id)})
     if result.deleted_count == 0:
         return {"error": "Chapter not found"}, 404
+    # Remove the chapter id from the respective course's chapters array
+    course_collection.update_one(
+        {"_id": course_id},
+        {"$pull": {"chapters": chapter_id}}
+    )
     return {"message": "Chapter deleted successfully"}, 200
 
 @chapter_routes.route('/courses/<course_id>/chapters/reorder', methods=['POST'])

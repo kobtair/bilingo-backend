@@ -1,9 +1,10 @@
+import os
 from flask import Flask
 from routes import routes
 from flask_cors import CORS
 
 app = Flask(__name__)
-app.config["DEBUG"] = True  # Only include this while you are testing your app
+app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "False").lower() == "true"
 CORS(app)
 
 app.register_blueprint(routes)

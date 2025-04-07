@@ -85,8 +85,9 @@ def add_course():
         valid_course = CourseModel.model_validate(course_data)
     except ValidationError as e:
         return {"error": e.errors()}, 400
-    course_collection.insert_one(valid_course.model_dump())
-    return {"message": "Course added successfully"}, 201
+    new_course = course_collection.insert_one(valid_course.model_dump())
+    course_data['_id'] = str(new_course.inserted_id)
+    return jsonify(course_data), 201
 
 @course_routes.route('/courses/<course_id>', methods=['PUT'])
 def update_course(course_id):
@@ -101,4 +102,6 @@ def update_course(course_id):
     result = course_collection.update_one({"id": course_id}, {"$set": valid_course.model_dump()})
     if result.matched_count == 0:
         return {"error": "Course not found"}, 404
-    return {"message": "Course updated successfully"}, 200
+    update_course = course_collection.find_one({"id": course_id})
+    update_course['_id'] = str(update_course['_id'])
+    return jsonify(update_course), 200

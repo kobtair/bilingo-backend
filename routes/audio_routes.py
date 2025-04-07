@@ -31,7 +31,6 @@ def upload_audio():
     """
     Upload a new audio file.
     """
-    # Extract additional fields from the request form (or use request.json if preferred)
     data = {
         "id": request.form.get('id'),
         "title": request.form.get('title'),
@@ -43,8 +42,6 @@ def upload_audio():
         "duration": request.form.get('duration'),
         "uploadDate": date.today().strftime("%Y-%m-%d"),
     }
-    
-    # Save file to disk or cloud storage here
     audio_id = audio_collection.insert_one(data).inserted_id
     return {"message": "Audio file uploaded successfully", "audio_id": str(audio_id)}, 201
 

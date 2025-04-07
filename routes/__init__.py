@@ -8,6 +8,7 @@ from .analyze import analyze_routes
 from .stats_routes import stats_routes
 from .audio_routes import audio_routes
 from .chapter_routes import chapter_routes
+from .progress_routes import progress_routes
 
 routes = Blueprint('routes', __name__)
 
@@ -21,3 +22,4 @@ routes.register_blueprint(analyze_routes)
 routes.register_blueprint(stats_routes)
 routes.register_blueprint(audio_routes)
 routes.register_blueprint(chapter_routes)
+routes.register_blueprint(progress_routes)
