@@ -1,3 +1,5 @@
+# Deprecated: Use ml2.py logic instead.
+
 # import whisper
 # import jieba
 # from pypinyin import pinyin, Style

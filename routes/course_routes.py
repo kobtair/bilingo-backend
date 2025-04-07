@@ -3,6 +3,7 @@ from config import course_collection
 from bson import ObjectId
 from pydantic import BaseModel, ValidationError, field_validator
 from typing import Optional, List
+import uuid  # new import
 
 course_routes = Blueprint('course_routes', __name__)
 
@@ -85,9 +86,13 @@ def add_course():
         valid_course = CourseModel.model_validate(course_data)
     except ValidationError as e:
         return {"error": e.errors()}, 400
-    new_course = course_collection.insert_one(valid_course.model_dump())
-    course_data['_id'] = str(new_course.inserted_id)
-    return jsonify(course_data), 201
+    new_course_data = valid_course.model_dump()
+    new_id = str(uuid.uuid4())  # generate unique id
+    new_course_data["id"] = new_id  # add unique id to course data
+    new_course = course_collection.insert_one(new_course_data)
+    new_course_data['_id'] = str(new_course.inserted_id)  # convert ObjectId to string
+    # Return the new course document which includes the 'id'
+    return jsonify(new_course_data), 201
 
 @course_routes.route('/courses/<course_id>', methods=['PUT'])
 def update_course(course_id):
@@ -99,9 +104,22 @@ def update_course(course_id):
         valid_course = CourseModel.model_validate(course_data)
     except ValidationError as e:
         return {"error": e.errors()}, 400
-    result = course_collection.update_one({"id": course_id}, {"$set": valid_course.model_dump()})
+    update_data = valid_course.model_dump()
+    update_data["id"] = course_id  # enforce unique id remains unchanged
+    result = course_collection.update_one({"id": course_id}, {"$set": update_data})
     if result.matched_count == 0:
         return {"error": "Course not found"}, 404
     update_course = course_collection.find_one({"id": course_id})
     update_course['_id'] = str(update_course['_id'])
     return jsonify(update_course), 200
+
+@course_routes.route('/courses/<course_id>', methods=['DELETE'])
+def delete_course(course_id):
+    """
+    Delete an existing course from the database.
+    """
+    course = course_collection.find_one({"id": course_id})
+    if not course:
+        return jsonify({"error": "Course not found"}), 404
+    course_collection.delete_one({"id": course_id})
+    return jsonify({"message": "Course deleted"}), 200
