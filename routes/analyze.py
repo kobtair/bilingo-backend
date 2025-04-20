@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 import os
 import tempfile
 from difflib import SequenceMatcher
-from ml import transcribe_audio, text_to_pinyin, simplify_pinyin
+from ml2_api import transcribe_audio, text_to_pinyin, simplify_pinyin
 from config import user_collection, audio_collection
 from bson.objectid import ObjectId
 import requests
