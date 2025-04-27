@@ -1,0 +1,14 @@
+bcrypt==4.0.1
+PyJWT==2.8.0
+Flask==2.3.3
+Flask-Cors==3.0.10
+requests>=2.28.0
+python-dotenv==1.0.0
+pymongo==4.11.3
+flask>=2.0.0
+pymongo>=4.0.0
+bson>=0.5.10
+jieba>=0.42.1
+pypinyin>=0.47.1
+wheel>=0.40.0
+python-Levenshtein>=0.20.9
